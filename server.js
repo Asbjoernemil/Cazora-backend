@@ -3,7 +3,7 @@ import mysql from 'mysql2/promise';
 import fs from 'fs/promises';
 import cors from 'cors';
 
-// Import routes
+// Importer routes
 import productsRouter from './routes/productsRouter.js';
 // import categoriesRouter from './routes/categories';
 // import bookingsRouter from './routes/bookings';
@@ -12,7 +12,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 
-// Create connection to database
+// opret forbindelse til database
 const connection = await mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -25,7 +25,7 @@ app.use(cors())
 app.use(express.json())
 
 
-// Use routes
+// brug routes
 app.use("/products", productsRouter);
 // app.use('/products', productsRouter);
 // app.use('/categories', categoriesRouter);

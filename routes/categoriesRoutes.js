@@ -1,4 +1,4 @@
-// Hent alle kategorier
+// Get all categories
 app.get("/categories", async (req, res) => {
     try {
         const [rows] = await connection.execute('SELECT * FROM Categories');
@@ -9,7 +9,7 @@ app.get("/categories", async (req, res) => {
     }
 });
 
-// Hent specifik kategori
+// Get specific category
 app.get("/categories/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -27,7 +27,7 @@ app.get("/categories/:id", async (req, res) => {
 });
 
 
-// Hent alle reservationer
+// Get all reservations
 app.get("/bookings", async (req, res) => {
     try {
         const [rows] = await connection.execute('SELECT * FROM Bookings');

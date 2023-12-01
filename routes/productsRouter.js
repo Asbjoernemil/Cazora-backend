@@ -5,7 +5,7 @@ import connection from "../server.js";
 
 const productsRouter = Router();
 
-// Get a list of all products
+// Get list of all products
 productsRouter.get("/", async (req, res) => {
     try {
         const [rows] = await connection.execute('SELECT * FROM Products');
@@ -16,7 +16,7 @@ productsRouter.get("/", async (req, res) => {
     }
 });
 
-// Get a specific product by id
+// Get specific product using id
 productsRouter.get("/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -33,19 +33,19 @@ productsRouter.get("/:id", async (req, res) => {
     }
 });
 
-// Updates product
+// Update product
 productsRouter.put("/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const updatedProduct = req.body;
 
-        // Check om produktet eksisterer
+        // Check if product exists
         const [checkRows] = await connection.execute('SELECT * FROM products WHERE id = ?', [id]);
         if (checkRows.length === 0) {
             return res.status(404).send('Produktet blev ikke fundet.');
         }
 
-        // Generer dynamisk SQL baseret på de tilgængelige felter i req.body
+        // Genererer dynamisk SQL baseret på de tilgængelige felter i req.body
         const fieldsToUpdate = Object.keys(updatedProduct)
             .map(field => `${field} = ?`)
             .join(', ');
@@ -56,7 +56,7 @@ productsRouter.put("/:id", async (req, res) => {
             WHERE id = ?
         `;
 
-        // Opret et array af værdier for SQL-forespørgslen
+        // Create array of values for SQL request
         const values = [...Object.values(updatedProduct), id];
 
         const [result] = await connection.execute(sql, values);
@@ -101,7 +101,7 @@ productsRouter.post("/", async (req, res) => {
 });
 
 
-// Deletes a product  by id:
+// Deletes product by id:
 productsRouter.delete("/:id", async (req, res) => {
     try {
         const { id } = req.params;
