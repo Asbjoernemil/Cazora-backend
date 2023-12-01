@@ -1,56 +1,12 @@
-import express from 'express';
-import mysql from 'mysql2/promise';
-import fs from 'fs/promises';
-import cors from 'cors';
-
-const app = express();
-const port = process.env.PORT || 3000;
+import { Router } from "express"
+import connection from "../server.js";
 
 
-const connection = await mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'Database',
-    database: 'cazora_database',
-    charset: 'utf8mb4',
-});
 
-app.use(cors())
-app.use(express.json())
+const productsRouter = Router();
 
-//*********GET**********/
-
-
-// Hent alle kategorier
-app.get("/categories", async (req, res) => {
-    try {
-        const [rows] = await connection.execute('SELECT * FROM Categories');
-        res.json(rows);
-    } catch (error) {
-        console.error('Fejl ved læsning af kategorier: ', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-// Hent specifik kategori
-app.get("/categories/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const [rows] = await connection.execute('SELECT * FROM Categories WHERE category_id = ?', [id]);
-
-        if (rows.length > 0) {
-            res.json(rows[0]);
-        } else {
-            res.status(404).send('Kategorien blev ikke fundet.');
-        }
-    } catch (error) {
-        console.error('Fejl ved læsning af specifik kategori: ', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-// Hent alle produkter
-app.get("/products", async (req, res) => {
+// Get a list of all products
+productsRouter.get("/", async (req, res) => {
     try {
         const [rows] = await connection.execute('SELECT * FROM Products');
         res.json(rows);
@@ -60,9 +16,8 @@ app.get("/products", async (req, res) => {
     }
 });
 
-
-// Hent specifik produkt
-app.get("/products/:id", async (req, res) => {
+// Get a specific product by id
+productsRouter.get("/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const [rows] = await connection.execute('SELECT * FROM products WHERE id = ?', [id]);
@@ -78,19 +33,8 @@ app.get("/products/:id", async (req, res) => {
     }
 });
 
-// Hent alle reservationer
-app.get("/bookings", async (req, res) => {
-    try {
-        const [rows] = await connection.execute('SELECT * FROM Bookings');
-        res.json(rows);
-    } catch (error) {
-        console.error('Fejl ved læsning af reservationer: ', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-//********PUT************/
-app.put("/products/:id", async (req, res) => {
+// Updates product
+productsRouter.put("/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const updatedProduct = req.body;
@@ -128,10 +72,8 @@ app.put("/products/:id", async (req, res) => {
     }
 });
 
-
-
-//********POST***********/
-app.post("/products", async (req, res) => {
+// Create a new product
+productsRouter.post("/", async (req, res) => {
     try {
         const product = req.body;
         console.log('New Product:', product);
@@ -159,9 +101,8 @@ app.post("/products", async (req, res) => {
 });
 
 
-
-//********DELETE*********/
-app.delete("/products/:id", async (req, res) => {
+// Deletes a product  by id:
+productsRouter.delete("/:id", async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -179,8 +120,4 @@ app.delete("/products/:id", async (req, res) => {
     }
 });
 
-
-
-
-app.listen(port, () => console.log(`Genbrugstøjbutik-app listening on port ${port}`));
-
+export default productsRouter
