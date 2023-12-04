@@ -16,7 +16,7 @@ const port = process.env.PORT || 3000;
 const connection = await mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'mysql',
+    password: 'Database',
     database: 'cazora_database',
     charset: 'utf8mb4',
 });
