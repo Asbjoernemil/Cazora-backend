@@ -76,8 +76,6 @@ productsRouter.put("/:id", async (req, res) => {
 productsRouter.post("/", async (req, res) => {
     try {
         const product = req.body;
-        console.log('New Product:', product);
-        console.log('Request Body:', req.body);
 
         const sql = `
             CALL InsertClothingArticle(?, ?, ?, ?, ?, ?, ?)
