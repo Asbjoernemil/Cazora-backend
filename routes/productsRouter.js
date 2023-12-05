@@ -80,12 +80,18 @@ productsRouter.post("/", async (req, res) => {
         console.log('Request Body:', req.body);
 
         const sql = `
-            INSERT INTO products 
-            (categories_id, sizes_id, name, price, description, booked, img) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            CALL InsertClothingArticle(?, ?, ?, ?, ?, ?, ?)
         `;
 
-        const values = [product.categories_id, product.sizes_id, product.name, product.price, product.description, product.booked, product.img];
+        const values = [
+            product.name,
+            product.categories,
+            product.size,
+            product.price,
+            product.description,
+            product.reserved,
+            product.img
+        ];
 
         const [result] = await connection.execute(sql, values);
 

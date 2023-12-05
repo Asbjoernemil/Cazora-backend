@@ -27,7 +27,6 @@ app.use(express.json())
 
 // brug routes
 app.use("/products", productsRouter);
-// app.use('/products', productsRouter);
 // app.use('/categories', categoriesRouter);
 // app.use('/bookings', bookingsRouter);
 
