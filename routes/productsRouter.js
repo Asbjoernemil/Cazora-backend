@@ -1,14 +1,12 @@
 import { Router } from "express"
 import connection from "../server.js";
 
-
-
 const productsRouter = Router();
 
 // Get list of all products
 productsRouter.get("/", async (req, res) => {
     try {
-        const [rows] = await connection.execute('SELECT * FROM Products');
+        const [rows] = await connection.execute('SELECT * FROM products');
         res.json(rows);
     } catch (error) {
         console.error('Fejl ved læsning af produkter: ', error);
