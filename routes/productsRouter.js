@@ -107,9 +107,11 @@ productsRouter.delete("/:id", async (req, res) => {
     try {
         const { id } = req.params;
 
-        const sql = 'DELETE FROM products WHERE id = ?'; // Ændr dette til 'DELETE FROM Products WHERE product_id = ?'
+        // Brug proceduren til at slette produktet og kategorisammenkædninger
+        const sql = 'CALL DeleteProduct(?)';
         const [result] = await connection.execute(sql, [id]);
 
+        // Kontroller om noget blev slettet
         if (result.affectedRows > 0) {
             res.json({ message: 'Produkt slettet med succes.' });
         } else {

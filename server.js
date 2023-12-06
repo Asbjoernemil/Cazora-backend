@@ -5,8 +5,9 @@ import cors from 'cors';
 
 // Importer routes
 import productsRouter from './routes/productsRouter.js';
-// import categoriesRouter from './routes/categories';
-// import bookingsRouter from './routes/bookings';
+import categoriesRouter from './routes/categoriesRoutes.js';
+import productCategoriesRouter from './routes/product_categories.js';
+import sizeRouter from './routes/sizeRouter.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -27,9 +28,9 @@ app.use(express.json())
 
 // brug routes
 app.use("/products", productsRouter);
-// app.use('/products', productsRouter);
-// app.use('/categories', categoriesRouter);
-// app.use('/bookings', bookingsRouter);
+app.use('/categories', categoriesRouter);
+app.use('/productCategories', productCategoriesRouter);
+app.use('/sizes', sizeRouter);
 
 
 // Start server
