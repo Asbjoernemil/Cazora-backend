@@ -8,6 +8,7 @@ import productsRouter from './routes/productsRouter.js';
 import categoriesRouter from './routes/categoriesRoutes.js';
 import productCategoriesRouter from './routes/product_categories.js';
 import sizeRouter from './routes/sizeRouter.js';
+import productSizesRouter from './routes/product_sizesRouter.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -31,7 +32,7 @@ app.use("/products", productsRouter);
 app.use('/categories', categoriesRouter);
 app.use('/productCategories', productCategoriesRouter);
 app.use('/sizes', sizeRouter);
-
+app.use('/productSizes', productSizesRouter);
 
 // Start server
 app.listen(port, () => console.log(`Genbrugstøjbutik-app listening on port ${port}`));
