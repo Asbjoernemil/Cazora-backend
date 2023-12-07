@@ -3,6 +3,7 @@ CREATE DATABASE cazora_database;
 USE cazora_database;
 
 -- clean slate
+drop table product_sizes;
 drop table product_categories;
 drop table reservations;
 drop table products;
@@ -49,13 +50,16 @@ CREATE TABLE products (
 -- tabel til prøverums-booking
 CREATE TABLE reservations
 (
-    id TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    creationTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fittingRoom INT,
     FOREIGN KEY (fittingRoom) REFERENCES fittingRooms (id),
-       product INT,
+    product INT,
     FOREIGN KEY (product) REFERENCES products(id),
-    contactInfo VARCHAR(1024)
+    contactInfo VARCHAR(1024),
+    pickUpTime DATETIME
 );
+
 
 -- tabel til produktkategorier
 -- unique gør at ingen dobbeltforekomster
@@ -67,6 +71,21 @@ CREATE TABLE product_categories (
     FOREIGN KEY (category_id) REFERENCES categories(id),
     UNIQUE (product_id, category_id)
 );
+
+-- Krydstabel mellem sizes og products
+CREATE TABLE product_sizes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT,
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    size_id INT,
+    FOREIGN KEY (size_id) REFERENCES sizes(id),
+    UNIQUE (product_id, size_id)
+);
+
+
+-- Indsæt nogle prøverum
+INSERT INTO fittingRooms (name) VALUES
+('Prøverum 1'), ('Prøverum 2'), ('Prøverum 3'), ('Prøverum 4'), ('Prøverum 5');
 
 -- kategorier oprettelse
 INSERT INTO categories (name) VALUES
@@ -124,13 +143,8 @@ END @@
 
 @@
 -- procedure til sletning af produkt og kategorisammenkædninger
-CREATE PROCEDURE DeleteProduct(IN product_name VARCHAR(100))
+CREATE PROCEDURE DeleteProduct(IN product_id VARCHAR(100))
 BEGIN
-    DECLARE product_id INT;
-
-    -- Find produktets id
-    SELECT id INTO product_id FROM products WHERE name = product_name;
-
     -- Slet tilknyttede rækker i product_categories
     DELETE FROM product_categories WHERE product_id = product_id;
 
@@ -166,4 +180,24 @@ CALL InsertClothingArticle('Lædernederdel', 'Nederdel, Læder, 90er, Future', '
 CALL InsertClothingArticle('Læderbukser', 'Bukser, Læder, 90er, Rock', 'S', 200, 'Moderne læderbukser set på Brad Pitt til en filmpremiere i 1998.', false, 'https://ssb.wiki.gallery/images/thumb/8/8d/Yoshi_SSBU.png/1600px-Yoshi_SSBU.png');
 CALL InsertClothingArticle('Læderfrakke', 'Jakke, Frakke, 90er, Vinter, Varm', 'XL', 350, 'Stilfuld læderfrakke set på Brad Pitt til en filmpremiere i 1992.', false, 'https://ssb.wiki.gallery/images/thumb/8/8d/Yoshi_SSBU.png/1600px-Yoshi_SSBU.png');
 CALL InsertClothingArticle('Lædervest', 'Læder, Formelt, 90er', 'One Size', 180, 'Trendy lædervest set på Brad Pitt til en filmpremiere i 1999.', false, 'https://ssb.wiki.gallery/images/thumb/8/8d/Yoshi_SSBU.png/1600px-Yoshi_SSBU.png');
+
+
+CALL DeleteProduct('Lædervest');
+
+SELECT products.*, GROUP_CONCAT(categories.name) AS category_names
+FROM products
+INNER JOIN product_categories ON products.id = product_categories.product_id
+INNER JOIN categories  ON product_categories.category_id = categories.id
+GROUP BY products.id;
+
+SELECT products.*
+FROM products
+INNER JOIN product_sizes ON products.id = product_sizes.product_id
+INNER JOIN sizes ON product_sizes.size_id = sizes.id
+WHERE sizes.name = 'M';
+
+-- Opret en reservation for Prøverum 1
+INSERT INTO reservations (fittingRoom, product, contactInfo, pickUpTime)
+VALUES
+    ((SELECT id FROM fittingRooms WHERE name = 'Prøverum 1'), 1, 'John Doe', '2023-01-01 14:00:00');
 
