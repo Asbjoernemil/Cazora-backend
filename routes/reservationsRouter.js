@@ -35,13 +35,21 @@ reservationsRouter.post('/', async (req, res) => {
     try {
         const reservation = req.body;
 
-        const sql = 'INSERT INTO reservations (fittingRoom, product, contactInfo, pickUpTime) VALUES (?, ?, ?, ?)';
-        const values = [reservation.fittingRoom, reservation.product, reservation.contactInfo, reservation.pickUpTime];
+        const createReservationSql = 'INSERT INTO reservations (fittingRoom, product, contactInfo, pickUpTime) VALUES (?, ?, ?, ?)';
+        const reservationValues = [reservation.fittingRoom, reservation.product, reservation.contactInfo, reservation.pickUpTime];
 
-        const [result] = await connection.execute(sql, values);
+        const [resultReservation] = await connection.execute(createReservationSql, reservationValues);
 
-        if (result.affectedRows > 0) {
-            res.json({ message: 'Reservation oprettet med succes.' });
+        if (resultReservation.affectedRows > 0) {
+            // Opdater produktet til at være reserveret
+            const updateProductSql = 'UPDATE products SET reserved = true WHERE id = ?';
+            const [resultUpdateProduct] = await connection.execute(updateProductSql, [reservation.product]);
+
+            if (resultUpdateProduct.affectedRows > 0) {
+                res.json({ message: 'Reservation oprettet med succes, og produktet er nu markeret som reserveret.' });
+            } else {
+                res.status(500).send('Fejl ved opdatering af produktets status til reserveret.');
+            }
         } else {
             res.status(500).send('Fejl ved oprettelse af reservation.');
         }
@@ -50,6 +58,7 @@ reservationsRouter.post('/', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
 
 // Slet reservation ved id
 reservationsRouter.delete('/:id', async (req, res) => {
