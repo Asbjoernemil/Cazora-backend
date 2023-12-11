@@ -100,9 +100,9 @@ productCategoriesRouter.get('/details/:productId', async (req, res) => {
 });
 
 // Endpoint for at hente alle produkter i en bestemt kategori
-productCategoriesRouter.get('/products-in-category/:categoryId', async (req, res) => {
+productCategoriesRouter.get('/products-in-category/:id', async (req, res) => {
     try {
-        const { categoryId } = req.params;
+        const { id } = req.params;
 
         const sql = `
             SELECT products.*
@@ -110,7 +110,7 @@ productCategoriesRouter.get('/products-in-category/:categoryId', async (req, res
             INNER JOIN product_categories ON products.id = product_categories.product_id
             WHERE product_categories.category_id = ?
         `;
-        const [rows] = await connection.execute(sql, [categoryId]);
+        const [rows] = await connection.execute(sql, [id]);
 
         res.json(rows);
     } catch (error) {
