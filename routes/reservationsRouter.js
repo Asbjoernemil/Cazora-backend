@@ -35,18 +35,21 @@ reservationsRouter.post('/', async (req, res) => {
     try {
         const reservation = req.body;
 
-        const createReservationSql = 'CALL CreateReservation(?, ?, ?, ?)';
-        const reservationValues = [reservation.fittingRoom, reservation.product, reservation.contactInfo, reservation.pickUpTime];
+        const sql = 'CALL CreateReservation(?, ?, ?, ?)';
+        const values = [reservation.fittingRoom, reservation.product, reservation.contactInfo, reservation.pickUpTime];
 
-        const [result] = await connection.execute(createReservationSql, reservationValues);
+        const [result] = await connection.execute(sql, values);
 
-        if (result.affectedRows > 0) {
+        // Logger resultatet af procedureopkaldet
+        console.log('Procedure result:', result);
+
+        if (result.warningStatus === 0) {
             res.json({ message: 'Reservation oprettet med succes, og produktet er nu markeret som reserveret.' });
         } else {
             res.status(500).send('Fejl ved oprettelse af reservation.');
         }
     } catch (error) {
-        console.error('Fejl ved oprettelse af reservation: ', error);
+        console.error('Fejl ved oprettelse: ', error);
         res.status(500).send('Internal Server Error');
     }
 });
@@ -57,10 +60,10 @@ reservationsRouter.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
 
-        const sql = 'DELETE FROM reservations WHERE id = ?';
+        const sql = 'CALL CancelReservation(?)';
         const [result] = await connection.execute(sql, [id]);
 
-        if (result.affectedRows > 0) {
+        if (result.affectedRows === 0) {
             res.json({ message: 'Reservation slettet med succes.' });
         } else {
             res.status(404).send('Reservationen blev ikke fundet.');
