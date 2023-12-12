@@ -12,6 +12,10 @@ drop table sizes;
 drop table fittingRooms;
 drop procedure DeleteProduct;
 drop PROCEDURE InsertClothingArticle;
+drop procedure CreateReservation;
+drop procedure CancelReservation;
+drop procedure LoadSingleArticle;
+drop procedure UpdateClothingArticle;
 
 
 -- tabel til kategorier
@@ -153,10 +157,162 @@ BEGIN
 END @@
 
 
+CREATE PROCEDURE CreateReservation(
+    IN fittingRoom VARCHAR(255),
+    IN productId INT,
+    IN contactInfo VARCHAR(255),
+    IN pickUpTime DATETIME
+)
+BEGIN
+
+    -- Start en transaktion
+    START TRANSACTION;
+
+    -- Opret reservation
+    INSERT INTO reservations (fittingRoom, product, contactInfo, pickUpTime)
+    VALUES (fittingRoom, productId, contactInfo, pickUpTime);
+
+    -- Opdater produkt til at være reserveret
+    UPDATE products SET reserved = true WHERE id = productId;
+
+    -- Check for fejl og commit transaktionen
+    IF (SELECT ROW_COUNT() = 1) THEN
+        COMMIT;
+    ELSE
+
+        ROLLBACK;
+    END IF;
+
+END @@
+
+CREATE PROCEDURE CancelReservation(
+    IN reservationId INT
+)
+BEGIN
+    DECLARE productId INT;
+
+    -- Start en transaktion
+    START TRANSACTION;
+
+    -- Hent produkt-id for den slettede reservation
+    SELECT product INTO productId FROM reservations WHERE id = reservationId;
+
+    -- Slet reservation
+    DELETE FROM reservations WHERE id = reservationId;
+
+    -- Opdater produkt til ikke at være reserveret
+    UPDATE products SET reserved = false WHERE id = productId;
+
+    -- Check for fejl og commit transaktionen
+    IF (SELECT ROW_COUNT() = 1) THEN
+        COMMIT;
+    ELSE
+        ROLLBACK;
+    END IF;
+
+END @@
+
+create procedure LoadSingleArticle(IN product_id int)
+BEGIN
+    DECLARE product_name VARCHAR(100);
+    DECLARE product_price INT;
+    DECLARE product_description VARCHAR(1024);
+    DECLARE product_reserved BOOLEAN;
+    DECLARE product_img VARCHAR(750);
+    DECLARE product_size VARCHAR(10);
+    DECLARE category_names VARCHAR(500);
+
+    -- Hent produktinformation
+    SELECT
+        p.name,
+        p.price,
+        p.description,
+        p.reserved,
+        p.img,
+        s.name AS size
+    INTO
+        product_name,
+        product_price,
+        product_description,
+        product_reserved,
+        product_img,
+        product_size
+    FROM
+        products p
+    LEFT JOIN
+        sizes s ON p.sizes_id = s.id
+    WHERE
+        p.id = product_id;
+
+    -- Hent kategorinavne for produktet som en streng
+    SELECT
+        GROUP_CONCAT(c.name) AS categories
+    INTO
+        category_names
+    FROM
+        product_categories pc
+    JOIN
+        categories c ON pc.category_id = c.id
+    WHERE
+        pc.product_id = product_id;
+
+    -- Returnér resultatet
+    SELECT
+        product_name AS name,
+        product_price AS price,
+        product_description AS description,
+        product_reserved AS reserved,
+        product_img AS img,
+        product_size AS size,
+        category_names AS categories;
+END;
+
+create procedure UpdateClothingArticle
+    (IN product_id int, IN article_name varchar(100),
+                                                             IN category_names varchar(100), IN size_name varchar(10),
+                                                             IN article_price int, IN article_description varchar(1024),
+                                                             IN is_reserved tinyint(1), IN article_img varchar(750))
+
+BEGIN
+    DECLARE category_id INT;
+
+    -- Start transaktion
+    START TRANSACTION;
+
+    -- Opdater produktets informationer
+    UPDATE products
+    SET
+        sizes_id = (SELECT id FROM sizes WHERE name = size_name),
+        name = article_name,
+        price = article_price,
+        description = article_description,
+        reserved = is_reserved,
+        img = article_img
+    WHERE id = product_id;
+
+
+    -- Hent kategorinavne og indsæt i 'product_categories' kun for det opdaterede produkt
+    SET @categories := category_names;
+    WHILE LENGTH(@categories) > 0 DO
+        SET @category_name := TRIM(SUBSTRING_INDEX(@categories, ',', 1));
+        SET @categories := TRIM(BOTH ',' FROM SUBSTRING(@categories, CHAR_LENGTH(@category_name) + 2));
+
+        -- Find kategoriens id
+        SET @category_id := (SELECT id FROM categories WHERE name = @category_name);
+
+        -- Tjek om kombinationen af produkt og kategori allerede eksisterer
+        IF NOT EXISTS (SELECT * FROM product_categories WHERE product_id = product_id AND category_id = @category_id) THEN
+            -- Indsæt kun hvis kombinationen ikke findes
+            INSERT INTO product_categories (product_id, category_id)
+            VALUES (product_id, @category_id);
+        END IF;
+    END WHILE;
+
+    -- Commit ændringer
+    COMMIT;
+END;
 
 DELIMITER ;
-
-
 
 
 -- indsættelse af artikler
@@ -174,30 +330,10 @@ CALL InsertClothingArticle('Gummi One Size Bodystocking', 'Undertøj, Læder', '
 CALL InsertClothingArticle('Dobbeltstrop Hvid Bodystocking', 'Undertøj, Basics', 'XL', 95, 'Bodystocking med to skulderstropper for et stilfuldt look.', false, 'https://ssb.wiki.gallery/images/thumb/8/8d/Yoshi_SSBU.png/1600px-Yoshi_SSBU.png');
 CALL InsertClothingArticle('Sort Blonde Bodystocking', 'Undertøj, Basics, Blonder', 'M', 90, 'Elegant sort blonde bodystocking med indviklet design.', false, 'https://ssb.wiki.gallery/images/thumb/8/8d/Yoshi_SSBU.png/1600px-Yoshi_SSBU.png');
 
-
 CALL InsertClothingArticle('Læderjakke', 'Jakke, Frakke, Læder, 60er, 80er, 90er, Rock', 'L', 300, 'Stilfuld læderjakke set på Brad Pitt til en filmpremiere i 1995.', true, 'https://ssb.wiki.gallery/images/thumb/8/8d/Yoshi_SSBU.png/1600px-Yoshi_SSBU.png');
 CALL InsertClothingArticle('Lædernederdel', 'Nederdel, Læder, 90er, Future', 'M', 150, 'Elegant lædernederdel set på Brad Pitt til en filmpremiere i 1989.', false, 'https://ssb.wiki.gallery/images/thumb/8/8d/Yoshi_SSBU.png/1600px-Yoshi_SSBU.png');
 CALL InsertClothingArticle('Læderbukser', 'Bukser, Læder, 90er, Rock', 'S', 200, 'Moderne læderbukser set på Brad Pitt til en filmpremiere i 1998.', false, 'https://ssb.wiki.gallery/images/thumb/8/8d/Yoshi_SSBU.png/1600px-Yoshi_SSBU.png');
 CALL InsertClothingArticle('Læderfrakke', 'Jakke, Frakke, 90er, Vinter, Varm', 'XL', 350, 'Stilfuld læderfrakke set på Brad Pitt til en filmpremiere i 1992.', false, 'https://ssb.wiki.gallery/images/thumb/8/8d/Yoshi_SSBU.png/1600px-Yoshi_SSBU.png');
 CALL InsertClothingArticle('Lædervest', 'Læder, Formelt, 90er', 'One Size', 180, 'Trendy lædervest set på Brad Pitt til en filmpremiere i 1999.', false, 'https://ssb.wiki.gallery/images/thumb/8/8d/Yoshi_SSBU.png/1600px-Yoshi_SSBU.png');
 
-
-CALL DeleteProduct('Lædervest');
-
-SELECT products.*, GROUP_CONCAT(categories.name) AS category_names
-FROM products
-INNER JOIN product_categories ON products.id = product_categories.product_id
-INNER JOIN categories  ON product_categories.category_id = categories.id
-GROUP BY products.id;
-
-SELECT products.*
-FROM products
-INNER JOIN product_sizes ON products.id = product_sizes.product_id
-INNER JOIN sizes ON product_sizes.size_id = sizes.id
-WHERE sizes.name = 'M';
-
--- Opret en reservation for Prøverum 1
-INSERT INTO reservations (fittingRoom, product, contactInfo, pickUpTime)
-VALUES
-    ((SELECT id FROM fittingRooms WHERE name = 'Prøverum 1'), 1, 'John Doe', '2023-01-01 14:00:00');
 
