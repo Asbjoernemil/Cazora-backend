@@ -51,13 +51,20 @@ productsRouter.put("/:id", async (req, res) => {
             .join(', ');
 
         const sql = `
-            UPDATE products 
-            SET ${fieldsToUpdate}
-            WHERE id = ?
+            CALL UpdateClothingArticle(?,?,?,?,?,?,?,?)
         `;
 
         // Create array of values for SQL request
-        const values = [...Object.values(updatedProduct), id];
+        const values = [
+            id,
+            updatedProduct.name,
+            updatedProduct.categories,
+            updatedProduct.size,
+            updatedProduct.price,
+            updatedProduct.description,
+            updatedProduct.reserved,
+            updatedProduct.img
+        ];
 
         const [result] = await connection.execute(sql, values);
 
