@@ -18,7 +18,9 @@ productsRouter.get("/", async (req, res) => {
 productsRouter.get("/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const [rows] = await connection.execute('SELECT * FROM products WHERE id = ?', [id]);
+
+        const sql = 'CALL LoadSingleArticle(?)'
+        const [rows] = await connection.execute(sql, [id]);
 
         if (rows.length > 0) {
             res.json(rows[0]); // Hvis produktet findes, returner det første element i arrayet
@@ -49,13 +51,20 @@ productsRouter.put("/:id", async (req, res) => {
             .join(', ');
 
         const sql = `
-            UPDATE products 
-            SET ${fieldsToUpdate}
-            WHERE id = ?
+            CALL UpdateClothingArticle(?,?,?,?,?,?,?,?)
         `;
 
         // Create array of values for SQL request
-        const values = [...Object.values(updatedProduct), id];
+        const values = [
+            id,
+            updatedProduct.name,
+            updatedProduct.categories,
+            updatedProduct.size,
+            updatedProduct.price,
+            updatedProduct.description,
+            updatedProduct.reserved,
+            updatedProduct.img
+        ];
 
         const [result] = await connection.execute(sql, values);
 
@@ -75,10 +84,7 @@ productsRouter.post("/", async (req, res) => {
     try {
         const product = req.body;
 
-        const sql = `
-            CALL InsertClothingArticle(?, ?, ?, ?, ?, ?, ?)
-        `;
-
+        const sql = 'CALL InsertClothingArticle(?, ?, ?, ?, ?, ?, ?)';
         const values = [
             product.name,
             product.categories,
@@ -108,9 +114,11 @@ productsRouter.delete("/:id", async (req, res) => {
     try {
         const { id } = req.params;
 
-        const sql = 'DELETE FROM products WHERE id = ?'; // Ændr dette til 'DELETE FROM Products WHERE product_id = ?'
+        // Brug proceduren til at slette produktet og kategorisammenkædninger
+        const sql = 'CALL DeleteProduct(?)';
         const [result] = await connection.execute(sql, [id]);
 
+        // Kontroller om noget blev slettet
         if (result.affectedRows > 0) {
             res.json({ message: 'Produkt slettet med succes.' });
         } else {
