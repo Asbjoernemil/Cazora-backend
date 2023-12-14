@@ -28,7 +28,7 @@ const connection = await mysql.createConnection({
 });
 
 if (process.env.MYSQL_CERT) {
-    connection.ssl = { cs: fs.readFile("DigiCertGlobalRootCA.crt.pem") }
+    connection.ssl = { cs: fs.readFileSync("DigiCertGlobalRootCA.crt.pem") }
 };
 
 app.use(cors())
