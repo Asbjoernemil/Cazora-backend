@@ -36,9 +36,10 @@ reservationsRouter.post('/', async (req, res) => {
         const reservation = req.body;
 
         const sql = 'CALL CreateReservation(?, ?, ?, ?)';
-        const values = [reservation.fittingRoom, reservation.productId, reservation.contactInfo, reservation.pickUpTime];
+        const values = [reservation.fittingRoom, reservation.product, reservation.contactInfo, reservation.pickUpTime];
 
         console.log('Værdier:', values);
+        console.log('SQL-procedure:', sql);
         const [result] = await connection.execute(sql, values);
 
         // Logger resultatet af procedureopkaldet
