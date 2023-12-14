@@ -6,7 +6,7 @@ const reservationsRouter = Router();
 // Hent alle reservationer
 reservationsRouter.get('/', async (req, res) => {
     try {
-        const [rows] = await connection.execute('SELECT * FROM reservations');
+        const [rows] = await connection.execute('SELECT reservations.*, products.name AS productName, products.price AS productPrice, products.img AS productImg FROM reservations INNER JOIN products ON reservations.product = products.id');
         res.json(rows);
     } catch (error) {
         console.error('Fejl ved hentning af reservationer: ', error);
