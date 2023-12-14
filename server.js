@@ -17,19 +17,20 @@ const port = process.env.PORT || 3000;
 
 
 // opret forbindelse til database
-const connection = await mysql.createConnection({
+const dbconnect = {
     host: process.env.MYSQL_HOST,
     port: process.env.MYSQL_PORT,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DATABASE,
     charset: process.env.MYSQL_CHARSET,
-    multipleStatements: true,
-});
+};
 
 if (process.env.MYSQL_CERT) {
-    connection.ssl = { cs: fs.readFileSync("DigiCertGlobalRootCA.crt.pem") }
+    dbconnect.ssl = { ca: await fs.readFile("DigiCertGlobalRootCA.crt.pem") }
 };
+
+const connection = await mysql.createConnection(dbconnect)
 
 app.use(cors())
 app.use(express.json())
