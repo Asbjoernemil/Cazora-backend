@@ -25,9 +25,11 @@ const connection = await mysql.createConnection({
     database: process.env.MYSQL_DATABASE,
     charset: process.env.MYSQL_CHARSET,
     multipleStatements: true,
-    ssl: { cs: fs.readFile("DigiCertGlobalRootCA.crt.pem") }
 });
 
+if (process.env.MYSQL_CERT) {
+    connection.ssl = { cs: fs.readFile("DigiCertGlobalRootCA.crt.pem") }
+};
 
 app.use(cors())
 app.use(express.json())
