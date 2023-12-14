@@ -24,7 +24,8 @@ const connection = await mysql.createConnection({
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DATABASE,
     charset: process.env.MYSQL_CHARSET,
-    multipleStatements: true
+    multipleStatements: true,
+    ssl: { cs: fs.readFile("DigiCertGlobalRootCA.crt.pem") }
 });
 
 
