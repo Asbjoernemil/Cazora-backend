@@ -1,6 +1,6 @@
 import express from 'express';
 import mysql from 'mysql2/promise';
-import fs from 'fs/promises';
+import fs from 'fs';
 import cors from 'cors';
 import "dotenv/config"
 
@@ -27,7 +27,7 @@ const dbconnect = {
 };
 
 if (process.env.MYSQL_CERT) {
-    dbconnect.ssl = { ca: await fs.readFile("DigiCertGlobalRootCA.crt.pem") }
+    dbconnect.ssl = { cs: fs.readFileSync("DigiCertGlobalRootCA.crt.pem") }
 };
 
 const connection = await mysql.createConnection(dbconnect)
