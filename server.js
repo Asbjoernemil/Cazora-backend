@@ -2,6 +2,7 @@ import express from 'express';
 import mysql from 'mysql2/promise';
 import fs from 'fs/promises';
 import cors from 'cors';
+import "dotenv/config"
 
 // Importer routes
 import productsRouter from './routes/productsRouter.js';
@@ -17,12 +18,15 @@ const port = process.env.PORT || 3000;
 
 // opret forbindelse til database
 const connection = await mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'Database',
-    database: 'cazora_database',
-    charset: 'utf8mb4',
+    host: process.env.MYSQL_HOST,
+    port: process.env.MYSQL_PORT,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+    charset: process.env.MYSQL_CHARSET,
+    multipleStatements: true
 });
+
 
 app.use(cors())
 app.use(express.json())
