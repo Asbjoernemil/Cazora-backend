@@ -32,11 +32,12 @@ reservationsRouter.get('/:id', async (req, res) => {
 
 // Opret en ny reservation
 reservationsRouter.post('/', async (req, res) => {
+    console.log("hey");
     try {
         const reservation = req.body;
 
         const sql = 'CALL CreateReservation(?, ?, ?, ?)';
-        const values = [reservation.fittingRoom, reservation.product, reservation.contactInfo, reservation.pickUpTime];
+        const values = [reservation.fittingRoom, reservation.productId, reservation.contactInfo, reservation.pickUpTime];
 
         console.log('Værdier:', values);
         console.log('SQL-procedure:', sql);
