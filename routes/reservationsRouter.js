@@ -3,7 +3,7 @@ import connection from '../server.js';
 
 const reservationsRouter = Router();
 
-// Hent alle reservationer
+// Get reservation
 reservationsRouter.get('/', async (req, res) => {
     try {
         const [rows] = await connection.execute('SELECT reservations.*, products.name AS productName, products.price AS productPrice, products.img AS productImg FROM reservations INNER JOIN products ON reservations.product = products.id');
@@ -14,6 +14,7 @@ reservationsRouter.get('/', async (req, res) => {
     }
 });
 
+// Get reservation by id
 reservationsRouter.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -30,21 +31,15 @@ reservationsRouter.get('/:id', async (req, res) => {
     }
 });
 
-// Opret en ny reservation
+// Create reservation
 reservationsRouter.post('/', async (req, res) => {
-    console.log("hey");
     try {
         const reservation = req.body;
 
         const sql = 'CALL CreateReservation(?, ?, ?, ?)';
         const values = [reservation.fittingRoom, reservation.productId, reservation.contactInfo, reservation.pickUpTime];
 
-        console.log('Værdier:', values);
-        console.log('SQL-procedure:', sql);
         const [result] = await connection.execute(sql, values);
-
-        // Logger resultatet af procedureopkaldet
-        console.log('Procedure result:', result);
 
         if (result.warningStatus === 0) {
             res.json({ message: 'Reservation oprettet med succes, og produktet er nu markeret som reserveret.' });
@@ -58,7 +53,7 @@ reservationsRouter.post('/', async (req, res) => {
 });
 
 
-// Slet reservation ved id
+// Delete reservation by id
 reservationsRouter.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;

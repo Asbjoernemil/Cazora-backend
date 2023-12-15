@@ -3,12 +3,11 @@ import connection from '../server.js';
 
 const productCategoriesRouter = Router();
 
-// Endpoint for at tilføje et produkt til kategorier
+// Post product to a category
 productCategoriesRouter.post('/', async (req, res) => {
     try {
         const { productId, categoryIds } = req.body;
 
-        // Loop gennem hver kategori og tilføj produktet
         for (const categoryId of categoryIds) {
             const sql = 'INSERT INTO product_categories (product_id, category_id) VALUES (?, ?)';
             const [result] = await connection.execute(sql, [productId, categoryId]);
@@ -21,7 +20,7 @@ productCategoriesRouter.post('/', async (req, res) => {
     }
 });
 
-// Endpoint for at hente alle kategorier for et givet produkt
+// Get all categories for one product
 productCategoriesRouter.get('/product/:productId', async (req, res) => {
     try {
         const { productId } = req.params;
@@ -36,7 +35,7 @@ productCategoriesRouter.get('/product/:productId', async (req, res) => {
     }
 });
 
-// Endpoint for at hente alle produkter for en given kategori
+// Get all products by one category
 productCategoriesRouter.get('/category/:categoryId', async (req, res) => {
     try {
         const { categoryId } = req.params;
@@ -57,7 +56,7 @@ productCategoriesRouter.get('/category/:categoryId', async (req, res) => {
 });
 
 
-// Endpoint for at fjerne et produkt fra en kategori
+// Delete a product from a category
 productCategoriesRouter.delete('/:productId/:categoryId', async (req, res) => {
     try {
         const { productId, categoryId } = req.params;
@@ -77,8 +76,8 @@ productCategoriesRouter.delete('/:productId/:categoryId', async (req, res) => {
 });
 
 
-// GET
-// Endpoint for at hente alle detaljer om et produkt
+
+// Get all details for a product
 productCategoriesRouter.get('/details/:productId', async (req, res) => {
     try {
         const { productId } = req.params;
@@ -99,7 +98,7 @@ productCategoriesRouter.get('/details/:productId', async (req, res) => {
     }
 });
 
-// Endpoint for at hente alle produkter i en bestemt kategori
+// Get all products from one category
 productCategoriesRouter.get('/products-in-category/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -119,7 +118,7 @@ productCategoriesRouter.get('/products-in-category/:id', async (req, res) => {
     }
 });
 
-// Endpoint for at hente alle kategorier for hvert produkt sammen med produktdetaljer
+// Get all categories for each products with details
 productCategoriesRouter.get('/categories-for-each-product', async (req, res) => {
     try {
         const sql = `

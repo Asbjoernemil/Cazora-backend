@@ -3,7 +3,7 @@ import connection from '../server.js';
 
 const productSizesRouter = Router();
 
-// Endpoint for at hente produkter efter størrelse
+// Get product sizes
 productSizesRouter.get('/products-by-size/:sizeName', async (req, res) => {
     try {
         const { sizeName } = req.params;

@@ -23,7 +23,7 @@ productsRouter.get("/:id", async (req, res) => {
         const [rows] = await connection.execute(sql, [id]);
 
         if (rows.length > 0) {
-            res.json(rows[0]); // Hvis produktet findes, returner det første element i arrayet
+            res.json(rows[0]);
         } else {
             res.status(404).send('Produktet blev ikke fundet.');
         }
@@ -45,7 +45,7 @@ productsRouter.put("/:id", async (req, res) => {
             return res.status(404).send('Produktet blev ikke fundet.');
         }
 
-        // Genererer dynamisk SQL baseret på de tilgængelige felter i req.body
+        // Generate dynamic SQL
         const fieldsToUpdate = Object.keys(updatedProduct)
             .map(field => `${field} = ?`)
             .join(', ');
@@ -54,7 +54,7 @@ productsRouter.put("/:id", async (req, res) => {
             CALL UpdateClothingArticle(?,?,?,?,?,?,?,?)
         `;
 
-        // Create array of values for SQL request
+        // Create array of values
         const values = [
             id,
             updatedProduct.name,
@@ -114,11 +114,9 @@ productsRouter.delete("/:id", async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Brug proceduren til at slette produktet og kategorisammenkædninger
         const sql = 'CALL DeleteProduct(?)';
         const [result] = await connection.execute(sql, [id]);
 
-        // Kontroller om noget blev slettet
         if (result.affectedRows > 0) {
             res.json({ message: 'Produkt slettet med succes.' });
         } else {
